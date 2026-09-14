@@ -1,6 +1,6 @@
 #!/bin/bash
 # tools-menu.sh - Linux 运维工具合集交互菜单
-# 仓库：DarkerLab/tools / shell 目录
+# 仓库：DarkerLab/tools/shell 目录
 
 # ========== 配置区 ==========
 BASE_URL="https://raw.githubusercontent.com/DarkerLab/tools/refs/heads/main/shell"
@@ -9,12 +9,14 @@ SCRIPTS=(
     "gai-priority.sh"
     "dns-resolv.sh"
     "swap.sh"
+    "bbr-enable.sh"
 )
 NAMES=(
     "修改主机名并同步 hosts"
     "设置 IPv4 解析优先"
     "配置 DNS 并锁定 resolv.conf"
     "交换分区添加/删除管理"
+    "启用 TCP BBR 拥塞控制"
 )
 MAX_OPTION=${#SCRIPTS[@]}
 # ============================
@@ -51,7 +53,7 @@ while true; do
     # 仅在真实交互终端时清屏
     [ -t 0 ] && clear
     echo "=================================="
-    echo "  Linux 运维工具合集 v1.1"
+    echo "  Linux 运维工具合集 v1.2"
     echo "  仓库: DarkerLab/tools"
     echo "=================================="
     for i in "${!SCRIPTS[@]}"; do
