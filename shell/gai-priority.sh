@@ -1,7 +1,7 @@
 #!/bin/bash
-# gai-priority.sh - Enable IPv4 precedence in /etc/gai.conf (uncomment if exists)
+# gai-priority.sh - 启用 /etc/gai.conf 中 IPv4 解析优先（存在注释行则自动取消注释）
 if [ "$(id -u)" -ne 0 ]; then
-    echo "❌ Must run as root"
+    echo "❌ 请使用 root 用户运行此脚本"
     exit 1
 fi
 
@@ -12,10 +12,10 @@ COMMENT_LINE="#${LINE}"
 # 如果存在注释的那一行，取消注释
 if grep -q "^${COMMENT_LINE}" "$CONF"; then
     sed -i "s/^${COMMENT_LINE}/${LINE}/" "$CONF"
-    echo "✅ Uncommented IPv4 precedence line."
+    echo "✅ 已取消注释，IPv4 解析优先已启用"
 elif grep -q "^${LINE}" "$CONF"; then
-    echo "✅ Already enabled."
+    echo "✅ IPv4 解析优先已处于启用状态"
 else
     echo "$LINE" >> "$CONF"
-    echo "✅ Added IPv4 precedence line."
+    echo "✅ 已添加配置，IPv4 解析优先已启用"
 fi
