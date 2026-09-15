@@ -36,22 +36,19 @@ create_swap() {
         swapoff "$SWAP_FILE" 2>/dev/null
         rm -f "$SWAP_FILE"
     fi
-
     read -p "请输入交换分区大小（单位 GB，例如 1）: " size_gb
     # 数值校验
     if ! [[ "$size_gb" =~ ^[0-9]+$ ]] || [ "$size_gb" -le 0 ]; then
         echo "❌ 请输入有效的正整数"
         return 1
     fi
-
     echo "正在创建 ${size_gb}GB 交换文件，请稍候..."
-    # 创建交换文件
-    if ! dd if=/dev/zero of="$SWAP_FILE" bs=1G count="$size_gb" status=progress; then
+    # 创建交换文件（使用 1M 块大小，避免小内存机器内存耗尽）
+    if ! dd if=/dev/zero of="$SWAP_FILE" bs=1M count=$(( size_gb * 1024 )) status=progress; then
         echo "❌ 交换文件创建失败"
         rm -f "$SWAP_FILE"
         return 1
     fi
-
     # 设置权限
     chmod 600 "$SWAP_FILE"
     # 格式化为 swap
@@ -60,16 +57,13 @@ create_swap() {
         rm -f "$SWAP_FILE"
         return 1
     fi
-
     # 启用 swap
     if ! swapon "$SWAP_FILE"; then
         echo "❌ 交换分区启用失败"
         rm -f "$SWAP_FILE"
         return 1
     fi
-
     echo "✅ ${size_gb}GB 交换分区创建并启用成功"
-
     # 开机自启配置
     read -p "是否添加到 /etc/fstab 开机自动挂载？(Y/n): " fstab_confirm
     if [ "$fstab_confirm" != "n" ] && [ "$fstab_confirm" != "N" ]; then
@@ -81,38 +75,10 @@ create_swap() {
             echo "✅ 已添加到 /etc/fstab，开机自动挂载"
         fi
     fi
-
     echo -e "\n当前交换分区状态："
     swapon --show
 }
 
-# 删除交换分区
-delete_swap() {
-    if [ ! -f "$SWAP_FILE" ]; then
-        echo "❌ 未找到交换文件 $SWAP_FILE"
-        return 1
-    fi
-
-    # 关闭 swap
-    echo "正在关闭交换分区..."
-    if ! swapoff "$SWAP_FILE"; then
-        echo "❌ 交换分区关闭失败，请检查是否正在使用"
-        return 1
-    fi
-
-    # 删除文件
-    rm -f "$SWAP_FILE"
-    echo "✅ 交换文件已删除"
-
-    # 清理 fstab 条目
-    if grep -q "$SWAP_FILE" "$FSTAB"; then
-        sed -i "\|$SWAP_FILE|d" "$FSTAB"
-        echo "✅ 已从 /etc/fstab 中移除开机挂载条目"
-    fi
-
-    echo -e "\n当前交换分区状态："
-    swapon --show
-}
 
 # 主菜单
 while true; do
